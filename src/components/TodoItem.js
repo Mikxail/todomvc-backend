@@ -5,6 +5,7 @@ import React, {
 import classnames from 'classnames'
 import TodoTextInput from './TodoTextInput'
 import TodoTags from './TodoTags';
+import TodoLike from './TodoLike';
 
 export default class TodoItem extends Component {
     static propTypes = {
@@ -67,6 +68,9 @@ export default class TodoItem extends Component {
                     </label>
                     <button className="destroy"
                           onClick={() => deleteTodo(todo.id)} />
+                    <TodoLike count={todo.Likes || 0}
+                              onSave={count => this.props.updateTodo(todo.id, {Likes: count})}
+                    />
                     <TodoTags tags={todo.Tags || []}
                               onSave={tags => this.props.updateTodo(todo.id, {Tags: tags})}
                     />
