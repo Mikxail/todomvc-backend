@@ -6,20 +6,22 @@ const HOST = 'http://localhost:3300';
 const NODE_ID = (Math.floor(Math.random() * 0xF0000000) + 0x10000000).toString(16);
 const itemId = () => `${NODE_ID}@${Date.now()}`;
 
-const _addTodo = text => {
+const _addTodo = (ctx, text) => {
     return fetch(HOST+'/item/' + itemId() , {
             method: 'POST',
             headers: {
                 'content-type': 'application/json'
             },
             body: JSON.stringify({
+                "Context": ctx,
                 "Description": text
             })
         }).then(res => res.json());
 };
 
-export const addTodo = text => dispatch => {
-    return _addTodo(text).then(item => {
+export const addTodo = text => (dispatch, getState) => {
+    var state = getState();
+    return _addTodo(text).then(state.context, item => {
         return dispatch({
             type: types.ADD_TODO,
             item
@@ -27,35 +29,41 @@ export const addTodo = text => dispatch => {
     });
 };
 
-const _getAllTodos = () => {
+const _getAllTodos = (ctx) => {
     return fetch(HOST + '/item', {
         headers: {
             'content-type': 'application/json'
-        }
+        },
+        // body: JSON.stringify({
+        //     "Context": ctx
+        // })
     }).then(res => res.json());
 
 };
 
-export const getAllTodos = () => dispatch => {
-    return _getAllTodos().then(items => {
+export const getAllTodos = () => (dispatch, getState) => {
+    return _getAllTodos(getState().context).then(item => {
         return dispatch({
             type: types.ALL_TODOS,
-            items: items
+            item: item
         });
     });
 };
 
-const _deleteTodo = id => {
+const _deleteTodo = (ctx, id) => {
     return fetch(HOST+'/item/' + id , {
         method: 'DELETE',
         headers: {
             'content-type': 'application/json'
         },
+        body: JSON.stringify({
+            "Context": ctx,
+        })
     }).then(res => res.json());
 };
 
-export const deleteTodo = id => dispatch => {
-    return _deleteTodo(id).then(item => {
+export const deleteTodo = id => (dispatch, getState) => {
+    return _deleteTodo(getState().context, id).then(item => {
         return dispatch({
             type: types.DELETE_TODO,
             item: item
@@ -63,18 +71,18 @@ export const deleteTodo = id => dispatch => {
     });
 };
 
-const _editTodo = (id, params) => {
+const _editTodo = (ctx, id, params) => {
     return fetch(HOST+'/item/' + id , {
         method: 'PUT',
         headers: {
             'content-type': 'application/json'
         },
-        body: JSON.stringify(params)
+        body: JSON.stringify(Object.assign({Context: ctx}, params))
     }).then(res => res.json());
 };
 
-export const editTodo = (id, text) => dispatch => {
-    return _editTodo(id, {Description: text}).then(item => {
+export const editTodo = (id, text) => (dispatch, getState) => {
+    return _editTodo(getState().context, id, {Description: text}).then(item => {
         return dispatch({
             type: types.EDIT_TODO,
             item: item
@@ -82,8 +90,8 @@ export const editTodo = (id, text) => dispatch => {
     });
 };
 
-export const completeTodo = id => dispatch => {
-    return _editTodo(id, {Done: true}).then(item => {
+export const updateTodo = (id, params) => (dispatch, getState) => {
+    return _editTodo(getState().context, id, params).then(item => {
         return dispatch({
             type: types.EDIT_TODO,
             item: item
@@ -91,8 +99,17 @@ export const completeTodo = id => dispatch => {
     });
 };
 
-export const uncompleteTodo = id => dispatch => {
-    return _editTodo(id, {Done: false}).then(item => {
+export const completeTodo = id => (dispatch, getState) => {
+    return _editTodo(getState().context, id, {Done: true}).then(item => {
+        return dispatch({
+            type: types.EDIT_TODO,
+            item: item
+        });
+    });
+};
+
+export const uncompleteTodo = id => (dispatch, getState) => {
+    return _editTodo(getState().context, id, {Done: false}).then(item => {
         return dispatch({
             type: types.EDIT_TODO,
             item: item

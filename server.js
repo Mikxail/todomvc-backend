@@ -16,13 +16,18 @@ const ITEM_ATTRS = [
 
 var items = {};
 
+function getCtx(){
+    return Math.random();
+}
+
 app.get('/item', (req, res) => {
-    res.json(
-        Object.keys(items).sort((a, b) => items[b]._added - items[a]._added).reduce((ret, id) => {
+    res.json({
+        Context: getCtx(),
+        items: Object.keys(items).sort((a, b) => items[b]._added - items[a]._added).reduce((ret, id) => {
             ret.push(items[id]);
             return ret;
         }, [])
-    );
+    });
 });
 
 app.post('/item/:itemId', (req, res) => {
@@ -30,13 +35,16 @@ app.post('/item/:itemId', (req, res) => {
     var item = _.pick(req.body, ITEM_ATTRS);
     Object.assign(item, {id: itemId, _added: Date.now()});
     items[itemId] = item;
-    res.json(item);
+    res.json(Object.assign({Context: getCtx()},item));
 });
 
 app.delete('/item/:itemId', (req, res) => {
     var itemId=  req.params['itemId'];
     delete items[itemId];
-    res.json({id: itemId});
+    res.json({
+        Context: getCtx(),
+        id: itemId
+    });
 });
 
 app.put('/item/:itemId', (req, res) => {
@@ -44,7 +52,7 @@ app.put('/item/:itemId', (req, res) => {
     var item = _.pick(req.body, ITEM_ATTRS);
     item = Object.assign({}, items[itemId], item);
     items[itemId] = item;
-    res.json(item);
+    res.json(Object.assign({Context: getCtx()},item));
 });
 
 app.listen(3300, () => {

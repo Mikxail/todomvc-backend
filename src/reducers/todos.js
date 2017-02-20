@@ -22,7 +22,7 @@ export default function todos(state = initialState, action) {
 
         case ALL_TODOS:
             return [
-                ...action.items
+                ...action.item.items
             ];
 
         case DELETE_TODO:
@@ -52,7 +52,7 @@ export default function todos(state = initialState, action) {
             return state.map(todo => ({
                 ...todo,
                 completed: !areAllMarked
-            }))
+            }));
 
         case CLEAR_COMPLETED:
             return state.filter(todo => todo.completed === false)
