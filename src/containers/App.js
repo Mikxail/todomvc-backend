@@ -15,15 +15,15 @@ const App = ({todos, actions}) => (
 App.propTypes = {
   todos: PropTypes.array.isRequired,
   actions: PropTypes.object.isRequired
-}
+};
 
 const mapStateToProps = state => ({
-  todos: state.todos
-})
+  todos: state.todos.sort((a, b) => a.id > b.id)
+});
 
 const mapDispatchToProps = dispatch => ({
     actions: bindActionCreators(TodoActions, dispatch)
-})
+});
 
 export default connect(
   mapStateToProps,

@@ -8,6 +8,12 @@ import {
     CLEAR_COMPLETED
 } from '../constants/ActionTypes'
 
+import {
+    NODE_ID
+} from '../constants/Config'
+
+const genId = () => `${Date.now()}_${NODE_ID}`;
+
 const initialState = [];
 
 export default function todos(state = initialState, action) {
@@ -16,7 +22,7 @@ export default function todos(state = initialState, action) {
             return action.res.items || [];
         case ADD_TODO:
             return [{
-                id: state.reduce((maxId, todo) => Math.max(todo.id, maxId), -1) + 1,
+                id: genId(),
                 done: false,
                 text: {text: [action.text]}
             },
