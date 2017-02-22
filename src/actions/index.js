@@ -1,138 +1,78 @@
+import lodash from 'lodash';
 import fetch from 'isomorphic-fetch';
-import * as types from '../constants/ActionTypes';
+import * as types from '../constants/ActionTypes'
 
-const HOST = 'http://localhost:3300';
+export const addTodo = text => ({ type: types.ADD_TODO, text });
+export const deleteTodo = id => ({ type: types.DELETE_TODO, id });
+export const editTodo = (id, text) => ({ type: types.EDIT_TODO, id, item: {id, text} });
+export const completeTodo = id => ({ type: types.COMPLETE_TODO, id });
+export const uncompleteTodo = id => ({ type: types.UNCOMPLETE_TODO, id });
+export const completeAll = () => ({ type: types.COMPLETE_ALL });
+export const clearCompleted = () => ({ type: types.CLEAR_COMPLETED });
 
-const NODE_ID = (Math.floor(Math.random() * 0xF0000000) + 0x10000000).toString(16);
-const itemId = () => `${NODE_ID}@${Date.now()}`;
-
-const _addTodo = (ctx, text) => {
-    return fetch(HOST+'/item/' + itemId() , {
-            method: 'POST',
-            headers: {
-                'content-type': 'application/json'
-            },
-            body: JSON.stringify({
-                "Context": ctx,
-                "Description": text
-            })
-        }).then(res => res.json());
-};
-
-export const addTodo = text => (dispatch, getState) => {
-    var state = getState();
-    return _addTodo(text).then(state.context, item => {
-        return dispatch({
-            type: types.ADD_TODO,
-            item
-        });
+export const updateTodo = (id, params) => dispatch => {
+    return dispatch({
+        type: types.EDIT_TODO,
+        id: id,
+        item: params
     });
 };
 
+// const HOST = 'http://localhost:3300';
+const HOST = ' http://52.41.223.84:8080';
+const LIST_ID = '1';
+
 const _getAllTodos = (ctx) => {
-    return fetch(HOST + '/item', {
+    return fetch(HOST + '/items/' + LIST_ID, {
         headers: {
             'content-type': 'application/json'
         },
-        // body: JSON.stringify({
-        //     "Context": ctx
-        // })
     }).then(res => res.json());
-
 };
 
 export const getAllTodos = () => (dispatch, getState) => {
-    return _getAllTodos(getState().context).then(item => {
+    return _getAllTodos(getState().context).then(res => {
         return dispatch({
             type: types.ALL_TODOS,
-            item: item
+            res: res
         });
     });
 };
 
-const _deleteTodo = (ctx, id) => {
-    return fetch(HOST+'/item/' + id , {
-        method: 'DELETE',
+const _pushAllTodos = (ctx, items) => {
+    return fetch(HOST+'/items/' + LIST_ID , {
+        method: 'POST',
         headers: {
             'content-type': 'application/json'
         },
         body: JSON.stringify({
-            "Context": ctx,
+            "ctx": ctx,
+            "items": items
         })
-    }).then(res => res.json());
+    }).then(res => res.ok);
 };
 
-export const deleteTodo = id => (dispatch, getState) => {
-    return _deleteTodo(getState().context, id).then(item => {
-        return dispatch({
-            type: types.DELETE_TODO,
-            item: item
-        });
-    });
-};
-
-const _editTodo = (ctx, id, params) => {
-    return fetch(HOST+'/item/' + id , {
-        method: 'PUT',
-        headers: {
-            'content-type': 'application/json'
-        },
-        body: JSON.stringify(Object.assign({Context: ctx}, params))
-    }).then(res => res.json());
-};
-
-export const editTodo = (id, text) => (dispatch, getState) => {
-    return _editTodo(getState().context, id, {Description: text}).then(item => {
-        return dispatch({
-            type: types.EDIT_TODO,
-            item: item
-        });
-    });
-};
-
-export const updateTodo = (id, params) => (dispatch, getState) => {
-    return _editTodo(getState().context, id, params).then(item => {
-        return dispatch({
-            type: types.EDIT_TODO,
-            item: item
-        });
-    });
-};
-
-export const completeTodo = id => (dispatch, getState) => {
-    return _editTodo(getState().context, id, {Done: true}).then(item => {
-        return dispatch({
-            type: types.EDIT_TODO,
-            item: item
-        });
-    });
-};
-
-export const uncompleteTodo = id => (dispatch, getState) => {
-    return _editTodo(getState().context, id, {Done: false}).then(item => {
-        return dispatch({
-            type: types.EDIT_TODO,
-            item: item
-        });
-    });
-};
-
-export const completeAll = () => (dispatch, getState) => {
+export const pushAllTodos = () => (dispatch, getState) => {
     var state = getState();
-    return Promise.all(state.todos
-        .filter(todo => !todo.Done)
-        .map(todo => {
-            return completeTodo(todo.id)(dispatch);
-        })
-    );
-};
-
-export const clearCompleted = () => (dispatch, getState) => {
-    var state = getState();
-    return Promise.all(state.todos
-        .filter(todo => todo.Done)
-        .map(todo => {
-            return uncompleteTodo(todo.id)(dispatch);
-        })
-    );
+    var todos = state.todos;
+    var remoteTodos = state.remoteTodos;
+    todos = todos.map(todo => {
+        todo.text.text = todo.text.text[0];
+        var rTodo = lodash.find(remoteTodos, {id: todo.id}) || {tags: []};
+        todo.tagsToAdd = (todo.tags || []).filter(t => {
+            return rTodo.tags.indexOf(t) == -1;
+        });
+        todo.tagsToRemove = (rTodo.tags || []).filter(t => {
+            return todo.tags.indexOf(t) == -1;
+        });
+        delete todo.tags;
+        return todo;
+    });
+    return _pushAllTodos(state.context, todos).then(res => {
+        return getAllTodos()(dispatch, getState);
+        // return dispatch({
+        //     type: types.ALL_TODOS,
+        //     res: res
+        // });
+    });
 };

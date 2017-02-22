@@ -8,12 +8,12 @@ import {
     CLEAR_COMPLETED
 } from '../constants/ActionTypes'
 
-const initialState = "";
+const initialState = [];
 
 export default function context(state = initialState, action) {
     switch(action.type) {
         case ALL_TODOS:
-            return action.res.ctx;
+            return action.res.items || [];
         default:
             return state;
     }

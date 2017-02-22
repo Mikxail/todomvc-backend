@@ -16,6 +16,7 @@ export default class Header extends Component {
     return (
       <header className="header">
         <h1>todos</h1>
+        <input type="button" value="sync" onClick={() => this.props.actions.pushAllTodos()}/>
         <TodoTextInput newTodo
                        onSave={this.handleSave}
                        placeholder="What needs to be done?" />

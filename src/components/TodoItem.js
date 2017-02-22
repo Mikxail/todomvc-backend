@@ -6,6 +6,7 @@ import classnames from 'classnames'
 import TodoTextInput from './TodoTextInput'
 import TodoTags from './TodoTags';
 import TodoLike from './TodoLike';
+import TodoText from './TodoText';
 
 export default class TodoItem extends Component {
     static propTypes = {
@@ -50,9 +51,10 @@ export default class TodoItem extends Component {
         } = this.props;
 
         let element;
+        let text = todo.text.text;
         if (this.state.editing) {
             element = (
-                <TodoTextInput text={todo.Description}
+                <TodoTextInput text={text[0]}
                                editing={this.state.editing}
                                onSave={(text) => this.handleSave(todo.id, text)} />
             )
@@ -61,18 +63,20 @@ export default class TodoItem extends Component {
                 <div className="view">
                     <input className="toggle"
                          type="checkbox"
-                         checked={todo.Done}
-                         onChange={() => todo.Done ? uncompleteTodo(todo.id) : completeTodo(todo.id)} />
-                    <label onClick={this.handleDoubleClick}>
-                      {todo.Description}
+                         checked={todo.done}
+                         onChange={() => completeTodo(todo.id)} />
+                    <label onDoubleClick={this.handleDoubleClick}>
+                        <TodoText texts={text}
+                                  onSelect={text => this.handleSave(todo.id, text)}
+                        />
                     </label>
                     <button className="destroy"
                           onClick={() => deleteTodo(todo.id)} />
-                    <TodoLike count={todo.Likes || 0}
-                              onSave={count => this.props.updateTodo(todo.id, {Likes: count})}
-                    />
-                    <TodoTags tags={todo.Tags || []}
-                              onSave={tags => this.props.updateTodo(todo.id, {Tags: tags})}
+                    {/*<TodoLike count={todo.likes || 0}*/}
+                              {/*onSave={count => this.props.updateTodo(todo.id, {likes: count})}*/}
+                    {/*/>*/}
+                    <TodoTags tags={todo.tags || []}
+                              onSave={tags => this.props.updateTodo(todo.id, {tags: tags})}
                     />
                 </div>
             )
@@ -80,7 +84,7 @@ export default class TodoItem extends Component {
 
         return (
             <li className={classnames({
-                completed: todo.Done,
+                completed: todo.done,
                 editing: this.state.editing
             })}>
                 {element}

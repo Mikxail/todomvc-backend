@@ -7,10 +7,10 @@ import * as TodoActions from '../actions'
 
 const App = ({todos, actions}) => (
   <div>
-    <Header addTodo={actions.addTodo} />
-    <MainSection todos={todos} actions={actions} />
+      <Header addTodo={actions.addTodo} actions={actions}/>
+      <MainSection todos={todos} actions={actions} />
   </div>
-)
+);
 
 App.propTypes = {
   todos: PropTypes.array.isRequired,
