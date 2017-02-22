@@ -57,8 +57,10 @@ export const pushAllTodos = () => (dispatch, getState) => {
     var todos = state.todos;
     var remoteTodos = state.remoteTodos;
     todos = todos.map(todo => {
-        todo.text.text = todo.text.text[0];
         var rTodo = lodash.find(remoteTodos, {id: todo.id}) || {tags: []};
+        if (lodash.isEqual(todo, rTodo)) return null;
+
+        todo.text.text = todo.text.text[0];
         todo.tagsToAdd = (todo.tags || []).filter(t => {
             return rTodo.tags.indexOf(t) == -1;
         });
@@ -67,7 +69,7 @@ export const pushAllTodos = () => (dispatch, getState) => {
         });
         delete todo.tags;
         return todo;
-    });
+    }).filter(Boolean);
     return _pushAllTodos(state.context, todos).then(res => {
         return getAllTodos()(dispatch, getState);
         // return dispatch({
