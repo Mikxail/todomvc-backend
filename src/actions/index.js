@@ -1,6 +1,7 @@
 import lodash from 'lodash';
 import fetch from 'isomorphic-fetch';
 import * as types from '../constants/ActionTypes'
+import URL from 'url';
 
 export const addTodo = text => ({ type: types.ADD_TODO, text });
 export const deleteTodo = id => ({ type: types.DELETE_TODO, id });
@@ -18,9 +19,10 @@ export const updateTodo = (id, params) => dispatch => {
     });
 };
 
+var query = URL.parse(document.location.search, true).query;
 // const HOST = 'http://localhost:3300';
-const HOST = ' http://52.41.223.84:8080';
-const LIST_ID = '1';
+const HOST = query.url || 'http://52.41.223.84:8080';
+const LIST_ID = query.id || '1';
 
 const _getAllTodos = (ctx) => {
     return fetch(HOST + '/items/' + LIST_ID, {
