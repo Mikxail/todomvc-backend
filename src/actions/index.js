@@ -57,16 +57,29 @@ export const pushAllTodos = () => (dispatch, getState) => {
     var todos = state.todos;
     var remoteTodos = state.remoteTodos;
     todos = todos.map(todo => {
-        var rTodo = lodash.find(remoteTodos, {id: todo.id}) || {tags: []};
+        var rTodo = lodash.find(remoteTodos, {id: todo.id}) || {tags: [], text: {}};
+        rTodo.tagsToAdd = [];
+        rTodo.tagsToRemove = [];
         if (lodash.isEqual(todo, rTodo)) return null;
 
-        todo.text.text = todo.text.text[0];
         todo.tagsToAdd = (todo.tags || []).filter(t => {
             return rTodo.tags.indexOf(t) == -1;
         });
         todo.tagsToRemove = (rTodo.tags || []).filter(t => {
             return todo.tags.indexOf(t) == -1;
         });
+        var isChanged = false;
+        ['text', 'done', 'likes', 'tagsToAdd', 'tagsToRemove'].forEach(f => {
+            if (lodash.isEqual(rTodo[f], todo[f])) {
+                delete todo[f];
+            } else {
+                isChanged = true;
+            }
+        });
+        if (!isChanged) return null;
+        if (todo.text){
+            todo.text.text = todo.text.text[0];
+        }
         delete todo.tags;
         return todo;
     }).filter(Boolean);
