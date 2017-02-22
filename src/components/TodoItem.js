@@ -70,8 +70,8 @@ export default class TodoItem extends Component {
                                   onSelect={text => this.handleSave(todo.id, text)}
                         />
                     </label>
-                    <button className="destroy"
-                          onClick={() => deleteTodo(todo.id)} />
+                    {/*<button className="destroy"*/}
+                          {/*onClick={() => deleteTodo(todo.id)} />*/}
                     {/*<TodoLike count={todo.likes || 0}*/}
                               {/*onSave={count => this.props.updateTodo(todo.id, {likes: count})}*/}
                     {/*/>*/}
