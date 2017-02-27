@@ -83,6 +83,9 @@ export const pushAllTodos = () => (dispatch, getState) => {
         delete todo.tags;
         return todo;
     }).filter(Boolean);
+    if (!todos.length) {
+        return getAllTodos()(dispatch, getState);
+    }
     return _pushAllTodos(state.context, todos).then(res => {
         return getAllTodos()(dispatch, getState);
         // return dispatch({
